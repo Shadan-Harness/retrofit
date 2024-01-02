@@ -6,10 +6,17 @@ buildscript {
     classpath libs.androidPlugin
     classpath libs.robovmPlugin
   }
+  configurations.configureEach {
+    resolutionStrategy.eachDependency { details ->
+      def requestedName = details.requested.name
+      if (details.requested.group == 'org.bouncycastle' && requestedName.contains("jdk15on")) {
+        details.useTarget("org.bouncycastle:${requestedName.replace("jdk15on", "jdk18on")}:1.71")
+      }
+    }
+  }
   repositories {
     mavenCentral()
     google()
-    jcenter()
     gradlePluginPortal()
   }
 }
@@ -29,7 +36,6 @@ subprojects {
   repositories {
     mavenCentral()
     google()
-    jcenter()
   }
 
   tasks.withType(JavaCompile).configureEach { task ->
@@ -101,14 +107,6 @@ subprojects {
         ktlint(libs.ktlint.get().version)
         target 'src/**/*.kt'
       }
-    }
-  }
-
-  plugins.withType(com.android.build.gradle.BasePlugin).configureEach { plugin ->
-    // Can remove this once https://issuetracker.google.com/issues/260059413 is fixed.
-    plugin.extension.compileOptions {
-      sourceCompatibility = JavaVersion.VERSION_1_8
-      targetCompatibility = JavaVersion.VERSION_1_8
     }
   }
 
